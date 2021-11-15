@@ -85,10 +85,24 @@ class ToastManager extends Component {
         }, duration);
     }
 
-    position() {
+    positionVertical() {
         if (this.props.position === 'top') return this.props.positionValue;
         if (this.props.position === 'center') return (height / 2) - RFPercentage(9);
         return height - this.props.positionValue - RFPercentage(10);
+    }
+    positionHorizontal() {
+        if (this.props.positionHorizontal === 'left') return {
+            left: RFPercentage(0),
+            right: null,
+        };
+        if (this.props.positionHorizontal === 'right') return {
+            right: RFPercentage(0),
+            left: null,
+        };
+        return {
+            left: null,
+            right: null,
+        };
     }
 
     handleBar = () => {
@@ -135,13 +149,23 @@ class ToastManager extends Component {
         this.handleBar();
         return (
             <Modal animationIn={this.props.animationIn || this.state.animationStyle[this.props.animationStyle].animationIn} animationOut={this.props.animationOut || this.state.animationStyle[this.props.animationStyle].animationOut} backdropTransitionOutTiming={this.props.backdropTransitionOutTiming} backdropTransitionInTiming={this.props.backdropTransitionInTiming} animationInTiming={this.props.animationInTiming} animationOutTiming={this.props.animationOutTiming} onTouchEnd={() => this.resume()} onTouchStart={() => this.pause()} swipeDirection={['up', 'down', 'left', 'right']} onModalHide={() => this.resetAll()} style={styles.modelContainer} isVisible={this.state.isShow} coverScreen={false} backdropColor={this.props.backdropColor} backdropOpacity={this.props.backdropOpacity} hasBackdrop={this.props.hasBackdrop} >
-                <View style={[styles.mainContainer, { width: this.props.width, height: this.props.height, backgroundColor: this.state.backgroundColor, top: this.position(), ...this.props.style }]} >
+                <View style={[styles.mainContainer, {
+                    width: this.props.width,
+                    backgroundColor: this.state.backgroundColor,
+                    top: this.positionVertical(), 
+                    left: this.positionHorizontal().left,
+                    right: this.positionHorizontal().right,
+                    ...this.props.style,
+                }]} >
+                    <View style={styles.wrapper}>
+                        <TouchableOpacity onPress={() => this.hideToast()} activeOpacity={0.9} style={styles.hideButton} >
+                            <Text style={styles.hideText} >+</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => this.hideToast()} activeOpacity={0.9} style={styles.hideButton} >
-                        <Text style={{ transform: [{ rotate: '45deg' }], fontWeight: "bold", fontSize: RFPercentage(3.5), color: "white" }} >+</Text>
-                    </TouchableOpacity>
-
-                    <Text style={[styles.textStyle, { color: this.state.textColor }]} >{this.state.text}</Text>
+                        <Text style={[styles.textStyle, { color: this.state.textColor }]} >
+                            {this.state.text}
+                        </Text>
+                    </View>
                     <View style={styles.progressBarContainer}>
                         <Animated.View style={[styles.progressBar, { width: this.state.barWidth }]} />
                     </View>
@@ -155,38 +179,49 @@ class ToastManager extends Component {
 const styles = StyleSheet.create({
     modelContainer: {
         flex: 1,
-        alignItems: "center"
+        alignItems: "center",
     },
     mainContainer: {
-        borderTopLeftRadius: 5,
-        borderTopRightRadius: 5,
+        borderTopLeftRadius: RFPercentage(0.8),
+        borderTopRightRadius: RFPercentage(0.8),
         position: "absolute",
         flexDirection: "column",
         alignItems: "flex-start",
         justifyContent: "center",
-
+        paddingVertical: RFPercentage(0.7),
+    },
+    wrapper: {
+        flexDirection: 'row-reverse',
+        width: '100%',
     },
     hideButton: {
-        position: "absolute",
-        top: RFPercentage(0),
-        right: RFPercentage(1)
+        width: '10%',
+        bottom: RFPercentage(1.6)
     },
     textStyle: {
         fontFamily: 'sans-serif-medium',
-        marginLeft: RFPercentage(2),
-        marginRight: RFPercentage(2),
-        fontSize: RFPercentage(2.5)
+        paddingLeft: RFPercentage(1.5),
+        paddingRight: RFPercentage(1.5),
+        fontSize: RFPercentage(1.7),
+        width: '90%',
     },
     progressBarContainer: {
         flexDirection: "row",
         position: "absolute",
-        height: 4,
+        height: RFPercentage(0.4),
         width: '100%',
         bottom: 0
     },
     progressBar: {
         opacity: 0.7,
         backgroundColor: "rgba(255,255,255,.7)"
+    },
+    hideText: {
+        transform: [{ rotate: '45deg' }],
+        fontWeight: "bold",
+        fontSize: RFPercentage(3.5),
+        color: "white",
+        textAlign: 'center',
     }
 });
 
@@ -195,6 +230,7 @@ ToastManager.defaultProps = {
     height: RFPercentage(8.5),
     style: {},
     position: 'top',
+    positionHorizontal:'center',
     positionValue: 50,
     end: 0,
     duration: 3000,
